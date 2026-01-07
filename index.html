@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shell Shockers - Browser Game</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Arial', sans-serif;
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        .game-container {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        .game-wrapper {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            background: #000;
+        }
+
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            display: block;
+        }
+
+        .loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 24px;
+            text-align: center;
+            z-index: 10;
+        }
+
+        .loading::after {
+            content: '';
+            display: block;
+            width: 50px;
+            height: 50px;
+            margin: 20px auto;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top: 3px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .controls {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            z-index: 5;
+        }
+
+        .fullscreen-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            z-index: 5;
+            transition: background 0.3s;
+        }
+
+        .fullscreen-btn:hover {
+            background: rgba(0, 0, 0, 0.9);
+        }
+
+        .error {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            text-align: center;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 30px;
+            border-radius: 10px;
+            z-index: 10;
+        }
+
+        .error h2 {
+            margin-bottom: 15px;
+            color: #ff6b6b;
+        }
+
+        .error p {
+            margin-bottom: 10px;
+            line-height: 1.5;
+        }
+
+        .play-btn {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 15px;
+            transition: background 0.3s;
+        }
+
+        .play-btn:hover {
+            background: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="game-wrapper" id="gameWrapper">
+            <div class="loading" id="loading">
+                Loading Shell Shockers...
+                <br><small>Please wait while the game loads</small>
+            </div>
+            
+            <div class="controls">
+                <strong>Controls:</strong><br>
+                WASD - Move<br>
+                Mouse - Aim & Shoot<br>
+                Space - Jump<br>
+                Shift - Aim Down Sights<br>
+                R - Reload<br>
+                E - Melee Attack<br>
+                Q - Grenade<br>
+                Tab - Scoreboard<br>
+                Esc - Menu
+            </div>
+
+            <button class="fullscreen-btn" onclick="toggleFullscreen()">
+                Toggle Fullscreen
+            </button>
+
+            <iframe 
+                id="gameFrame"
+                src="https://shellshock.io/"
+                allow="fullscreen; autoplay; microphone; camera; gamepad"
+                allowfullscreen
+                style="display: none;">
+            </iframe>
+        </div>
+
+        <div class="error" id="error" style="display: none;">
+            <h2>Connection Error</h2>
+            <p>Unable to load Shell Shockers.</p>
+            <p>This could be due to:</p>
+            <p>• Network connectivity issues</p>
+            <p>• Game server maintenance</p>
+            <p>• Browser restrictions</p>
+            <button class="play-btn" onclick="reloadGame()">Try Again</button>
+        </div>
+    </div>
+
+    <script>
+        let iframe = document.getElementById('gameFrame');
+        let loading = document.getElementById('loading');
+        let error = document.getElementById('error');
+        let gameWrapper = document.getElementById('gameWrapper');
+
+        // Show iframe when it loads
+        iframe.onload = function() {
+            loading.style.display = 'none';
+            iframe.style.display = 'block';
+            console.log('Shell Shockers loaded successfully!');
+        };
+
+        // Handle iframe errors
+        iframe.onerror = function() {
+            loading.style.display = 'none';
+            error.style.display = 'block';
+            console.error('Failed to load Shell Shockers');
+        };
+
+        // Try to load the game
+        function loadGame() {
+            error.style.display = 'none';
+            loading.style.display = 'block';
+            iframe.style.display = 'none';
+            
+            // Add timestamp to prevent caching issues
+            iframe.src = 'https://shellshock.io/?t=' + Date.now();
+        }
+
+        // Reload game function
+        function reloadGame() {
+            loadGame();
+        }
+
+        // Fullscreen toggle
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                if (gameWrapper.requestFullscreen) {
+                    gameWrapper.requestFullscreen();
+                } else if (gameWrapper.mozRequestFullScreen) {
+                    gameWrapper.mozRequestFullScreen();
+                } else if (gameWrapper.webkitRequestFullscreen) {
+                    gameWrapper.webkitRequestFullscreen();
+                } else if (gameWrapper.msRequestFullscreen) {
+                    gameWrapper.msRequestFullscreen();
+                }
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                } else if (document.mozCancelFullScreen) {
+                    document.mozCancelFullScreen();
+                } else if (document.webkitExitFullscreen) {
+                    document.webkitExitFullscreen();
+                } else if (document.msExitFullscreen) {
+                    document.msExitFullscreen();
+                }
+            }
+        }
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            // F11 or F for fullscreen
+            if (e.key === 'F11' || e.key.toLowerCase() === 'f') {
+                e.preventDefault();
+                toggleFullscreen();
+            }
+            
+            // R for reload
+            if (e.key.toLowerCase() === 'r' && e.ctrlKey) {
+                e.preventDefault();
+                reloadGame();
+            }
+        });
+
+        // Auto-reload on connection issues
+        let reloadTimeout;
+        function checkConnection() {
+            fetch('https://shellshock.io/', { mode: 'no-cors' })
+                .then(() => {
+                    console.log('Connection check passed');
+                })
+                .catch(() => {
+                    console.log('Connection check failed, reloading...');
+                    reloadTimeout = setTimeout(reloadGame, 3000);
+                });
+        }
+
+        // Check connection every 30 seconds
+        setInterval(checkConnection, 30000);
+
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', function() {
+            if (reloadTimeout) {
+                clearTimeout(reloadTimeout);
+            }
+        });
+
+        // Initialize
+        console.log('Shell Shockers HTML Launcher v1.0');
+        console.log('Controls: WASD to move, Mouse to aim/shoot, Space to jump');
+        console.log('Press F or F11 for fullscreen');
+    </script>
+</body>
+</html>
